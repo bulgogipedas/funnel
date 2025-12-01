@@ -19,12 +19,66 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS for better aesthetics
+# Custom CSS for better aesthetics - Theme aware (works in both light and dark mode)
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
     
-    .main { background-color: #0e1117; }
+    /* CSS variables for theme support */
+    :root {
+        --card-bg-light: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        --card-border-light: #cbd5e1;
+        --text-primary-light: #1e293b;
+        --text-secondary-light: #64748b;
+        --insight-bg-light: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        --insight-warning-light: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        --insight-success-light: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        --section-border-light: #e2e8f0;
+        --tab-bg-light: #f1f5f9;
+        --tab-active-light: #e2e8f0;
+    }
+    
+    /* Dark mode styles */
+    @media (prefers-color-scheme: dark) {
+        .metric-card {
+            background: linear-gradient(135deg, #1a1f2e 0%, #151922 100%) !important;
+            border-color: #2d3748 !important;
+        }
+        .metric-value { color: #f0f2f6 !important; }
+        .metric-label { color: #8b949e !important; }
+        .insight-box { background: linear-gradient(135deg, #1e3a5f 0%, #1a2744 100%) !important; }
+        .insight-box-warning { background: linear-gradient(135deg, #5c3d1e 0%, #3d2a14 100%) !important; }
+        .insight-box-success { background: linear-gradient(135deg, #1e4620 0%, #142d16 100%) !important; }
+        .insight-title { color: #f0f2f6 !important; }
+        .insight-text { color: #c9d1d9 !important; }
+        .section-header { color: #f0f2f6 !important; border-color: #30363d !important; }
+        .main-title { color: #f0f2f6 !important; }
+        .main-subtitle { color: #8b949e !important; }
+        .footer-text { color: #8b949e !important; }
+    }
+    
+    /* Light mode styles */
+    @media (prefers-color-scheme: light) {
+        .metric-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+            border-color: #cbd5e1 !important;
+        }
+        .metric-value { color: #1e293b !important; }
+        .metric-label { color: #64748b !important; }
+        .insight-box { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important; }
+        .insight-box-warning { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important; }
+        .insight-box-success { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%) !important; }
+        .insight-title { color: #1e293b !important; }
+        .insight-text { color: #475569 !important; }
+        .section-header { color: #1e293b !important; border-color: #e2e8f0 !important; }
+        .main-title { color: #1e293b !important; }
+        .main-subtitle { color: #64748b !important; }
+        .footer-text { color: #64748b !important; }
+    }
+    
+    /* Metric value colors - always visible */
+    .metric-value-positive { color: #16a34a !important; }
+    .metric-value-negative { color: #dc2626 !important; }
     
     .metric-card {
         background: linear-gradient(135deg, #1a1f2e 0%, #151922 100%);
@@ -51,12 +105,12 @@ st.markdown("""
         margin-bottom: 4px;
     }
     
-    .metric-delta-positive { color: #3fb950; font-size: 0.9rem; }
-    .metric-delta-negative { color: #f85149; font-size: 0.9rem; }
+    .metric-delta-positive { color: #22c55e; font-size: 0.9rem; font-weight: 600; }
+    .metric-delta-negative { color: #ef4444; font-size: 0.9rem; font-weight: 600; }
     
     .insight-box {
         background: linear-gradient(135deg, #1e3a5f 0%, #1a2744 100%);
-        border-left: 4px solid #58a6ff;
+        border-left: 4px solid #3b82f6;
         border-radius: 0 8px 8px 0;
         padding: 16px 20px;
         margin: 16px 0;
@@ -64,12 +118,12 @@ st.markdown("""
     
     .insight-box-warning {
         background: linear-gradient(135deg, #5c3d1e 0%, #3d2a14 100%);
-        border-left: 4px solid #d29922;
+        border-left: 4px solid #f59e0b;
     }
     
     .insight-box-success {
         background: linear-gradient(135deg, #1e4620 0%, #142d16 100%);
-        border-left: 4px solid #3fb950;
+        border-left: 4px solid #22c55e;
     }
     
     .insight-title {
@@ -99,7 +153,6 @@ st.markdown("""
     
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: #161b22;
         padding: 8px;
         border-radius: 12px;
     }
@@ -107,14 +160,8 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] {
         background-color: transparent;
         border-radius: 8px;
-        color: #8b949e;
         font-family: 'DM Sans', sans-serif;
         font-weight: 500;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background-color: #21262d;
-        color: #f0f2f6;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -443,7 +490,7 @@ def create_funnel_chart(metrics: dict) -> go.Figure:
         margin=dict(l=20, r=20, t=40, b=20),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="DM Sans", color="#f0f2f6"),
+        font=dict(family="DM Sans"),
         title=dict(
             text="<b>Conversion Funnel</b>",
             font=dict(size=18),
@@ -475,10 +522,10 @@ def create_dropoff_waterfall(metrics: dict) -> go.Figure:
             f"{metrics['confirm_users']:,}",
         ],
         textposition="outside",
-        connector=dict(line=dict(color="#30363d")),
-        decreasing=dict(marker=dict(color="#f85149")),
-        increasing=dict(marker=dict(color="#3fb950")),
-        totals=dict(marker=dict(color="#58a6ff")),
+        connector=dict(line=dict(color="rgba(128,128,128,0.5)")),
+        decreasing=dict(marker=dict(color="#ef4444")),
+        increasing=dict(marker=dict(color="#22c55e")),
+        totals=dict(marker=dict(color="#3b82f6")),
     ))
 
     fig.update_layout(
@@ -486,15 +533,15 @@ def create_dropoff_waterfall(metrics: dict) -> go.Figure:
         margin=dict(l=20, r=20, t=60, b=20),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="DM Sans", color="#f0f2f6"),
+        font=dict(family="DM Sans"),
         title=dict(
             text="<b>User Drop-off Analysis</b><br><sup>Where are you losing customers?</sup>",
             font=dict(size=18),
             x=0.5,
         ),
         yaxis=dict(
-            gridcolor="#21262d",
-            zerolinecolor="#30363d",
+            gridcolor="rgba(128,128,128,0.2)",
+            zerolinecolor="rgba(128,128,128,0.3)",
         ),
         xaxis=dict(tickangle=-30),
         showlegend=False,
@@ -513,7 +560,7 @@ def create_segment_comparison(segment_df: pd.DataFrame, segment_col: str) -> go.
     )
 
     # Left: Overall conversion with significance markers
-    colors = ["#3fb950" if sig else "#6366f1" for sig in segment_df["significant"]]
+    colors = ["#22c55e" if sig else "#6366f1" for sig in segment_df["significant"]]
     
     fig.add_trace(
         go.Bar(
@@ -545,7 +592,7 @@ def create_segment_comparison(segment_df: pd.DataFrame, segment_col: str) -> go.
         margin=dict(l=20, r=20, t=60, b=20),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="DM Sans", color="#f0f2f6"),
+        font=dict(family="DM Sans"),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -556,7 +603,7 @@ def create_segment_comparison(segment_df: pd.DataFrame, segment_col: str) -> go.
         barmode="group",
     )
 
-    fig.update_yaxes(gridcolor="#21262d", zerolinecolor="#30363d")
+    fig.update_yaxes(gridcolor="rgba(128,128,128,0.2)", zerolinecolor="rgba(128,128,128,0.3)")
     fig.update_annotations(font_size=14)
 
     return fig
@@ -569,13 +616,13 @@ def create_cohort_heatmap(cohort_df: pd.DataFrame) -> go.Figure:
         x=cohort_df["cohort"].values,
         y=["Conversion %"],
         colorscale=[
-            [0, "#1a1f2e"],
+            [0, "#e0e7ff"],
             [0.5, "#6366f1"],
             [1, "#22c55e"],
         ],
         text=[[f"{v:.2f}%" for v in cohort_df["conversion_rate"]]],
         texttemplate="%{text}",
-        textfont=dict(size=10, color="#f0f2f6"),
+        textfont=dict(size=10),
         hovertemplate="Week: %{x}<br>Conversion: %{z:.2f}%<extra></extra>",
     ))
 
@@ -584,7 +631,7 @@ def create_cohort_heatmap(cohort_df: pd.DataFrame) -> go.Figure:
         margin=dict(l=20, r=20, t=40, b=20),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="DM Sans", color="#f0f2f6"),
+        font=dict(family="DM Sans"),
         title=dict(
             text="<b>Weekly Cohort Performance</b>",
             font=dict(size=14),
@@ -630,7 +677,7 @@ def create_trend_chart(cohort_df: pd.DataFrame) -> go.Figure:
         y=p(x_numeric),
         mode="lines",
         name=f"Trend ({trend_direction})",
-        line=dict(color="#f85149" if z[0] < 0 else "#3fb950", width=2, dash="dot"),
+        line=dict(color="#ef4444" if z[0] < 0 else "#22c55e", width=2, dash="dot"),
     ))
 
     fig.update_layout(
@@ -638,7 +685,7 @@ def create_trend_chart(cohort_df: pd.DataFrame) -> go.Figure:
         margin=dict(l=20, r=20, t=60, b=60),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="DM Sans", color="#f0f2f6"),
+        font=dict(family="DM Sans"),
         title=dict(
             text=f"<b>Conversion Trend Over Time</b><br><sup>{trend_direction} trend detected</sup>",
             font=dict(size=16),
@@ -651,8 +698,8 @@ def create_trend_chart(cohort_df: pd.DataFrame) -> go.Figure:
             xanchor="center",
             x=0.5,
         ),
-        xaxis=dict(tickangle=-45, gridcolor="#21262d"),
-        yaxis=dict(gridcolor="#21262d", title="Conversion Rate (%)"),
+        xaxis=dict(tickangle=-45, gridcolor="rgba(128,128,128,0.2)"),
+        yaxis=dict(gridcolor="rgba(128,128,128,0.2)", title="Conversion Rate (%)"),
     )
 
     return fig
@@ -712,10 +759,10 @@ insights = identify_key_insights(user_funnel, segment_analysis)
 # ==================================
 st.markdown("""
 <div style="text-align: center; padding: 20px 0 30px 0;">
-    <h1 style="font-family: 'DM Sans', sans-serif; font-size: 2.5rem; font-weight: 700; color: #f0f2f6; margin: 0;">
+    <h1 class="main-title" style="font-family: 'DM Sans', sans-serif; font-size: 2.5rem; font-weight: 700; margin: 0;">
         📊 Sales Funnel Intelligence
     </h1>
-    <p style="font-family: 'DM Sans', sans-serif; font-size: 1.1rem; color: #8b949e; margin-top: 8px;">
+    <p class="main-subtitle" style="font-family: 'DM Sans', sans-serif; font-size: 1.1rem; margin-top: 8px;">
         Actionable insights to optimize your conversion pipeline
     </p>
 </div>
@@ -784,10 +831,11 @@ with tab_funnel:
 
     for col, (stage, rate, dropoff) in zip(stage_cols, stages):
         with col:
+            color_class = "metric-value-positive" if rate > 20 else "metric-value-negative"
             st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-label">{stage}</div>
-                <div class="metric-value" style="color: {'#3fb950' if rate > 20 else '#f85149'}">{rate:.1f}%</div>
+                <div class="metric-value {color_class}">{rate:.1f}%</div>
                 <span class="metric-delta-negative">↓ {dropoff:.1f}% drop-off</span>
             </div>
             """, unsafe_allow_html=True)
@@ -819,7 +867,7 @@ with tab_segments:
             "Conv. Rate %": "{:.2f}%",
             "vs Avg %": "{:+.1f}%",
         }).applymap(
-            lambda x: "background-color: #1e4620" if x == True else ("background-color: #3d2a14" if x == False else ""),
+            lambda x: "background-color: rgba(34, 197, 94, 0.3)" if x == True else ("background-color: rgba(239, 68, 68, 0.2)" if x == False else ""),
             subset=["Significant"]
         ),
         use_container_width=True,
@@ -863,7 +911,7 @@ with tab_trends:
             x="day",
             y="conversion_rate",
             color="conversion_rate",
-            color_continuous_scale=["#f85149", "#f59e0b", "#3fb950"],
+            color_continuous_scale=["#ef4444", "#f59e0b", "#22c55e"],
             text=[f"{v:.2f}%" for v in day_analysis["conversion_rate"]],
         )
         fig_dow.update_traces(textposition="outside")
@@ -871,10 +919,10 @@ with tab_trends:
             height=350,
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="DM Sans", color="#f0f2f6"),
+            font=dict(family="DM Sans"),
             showlegend=False,
             coloraxis_showscale=False,
-            yaxis=dict(gridcolor="#21262d", title="Conversion Rate (%)"),
+            yaxis=dict(gridcolor="rgba(128,128,128,0.2)", title="Conversion Rate (%)"),
             xaxis=dict(title=""),
         )
         st.plotly_chart(fig_dow, use_container_width=True)
@@ -1007,7 +1055,7 @@ with tab_data:
 # ==================================
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #8b949e; font-size: 0.85rem; padding: 20px 0;">
+<div class="footer-text" style="text-align: center; font-size: 0.85rem; padding: 20px 0;">
     <p>Personal project @Rafli Ardiansyah</p>
 </div>
 """, unsafe_allow_html=True)
